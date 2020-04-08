@@ -6,6 +6,6 @@ MARITON Tanguy and COMBRIE Loïck
 
 # How to run
 
-npm install
-node server
-Browse to localhost:3000
+*npm install
+*node server
+*Browse to localhost:3000
