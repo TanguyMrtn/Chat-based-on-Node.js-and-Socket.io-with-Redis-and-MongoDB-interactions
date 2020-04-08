@@ -1,0 +1,155 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body {
+    font: 13px Helvetica, Arial;
+    transition: all 0.5s;
+}
+
+section#chat form {
+    background: #000;
+    padding: 3px;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    height: 50px;
+}
+section#chat form input {
+    border: 0;
+    padding: 5px 10px;
+    width: 90%;
+    height: 100%;
+    margin-right: .5%;
+    font-size: 20px;
+}
+section#chat form button {
+    width: 9%;
+    height: 100%;
+    background: #e67e22;
+    float: right;
+    border: none;
+    margin-right: 0.5%;
+    font-size: 17px;
+    color: white;
+}
+section#chat #messages {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    font-size: 15px;
+}
+section#chat #messages li {
+    padding: 5px 10px;
+}
+section#chat #messages li:nth-child(odd) {
+    background: #eee;
+}
+body#logged-out {
+    background: rgb(223, 223, 223);
+}
+body#logged-out section#chat {
+    filter: blur(5px);
+    -webkit-filter: blur(5px);
+}
+body#logged-out section#login {
+    opacity: 1;
+}
+
+section#login {
+    transition: all 0.5s;
+    opacity: 0;
+    top: 45%;
+    text-align: center;
+    position: fixed;
+    width: 100%
+}
+section#login label[for="u"] {
+    display: block;
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+section#login input#u {
+    font-size: 25px;
+    text-align: center;
+    padding: 5px;
+    border: 5px solid rgb(158, 158, 158);
+}
+section#login input#u:focus {
+    outline: none;
+}
+section#login button {
+    background: #e67e22;
+    border: none;
+    padding: 5px 80px;
+    color: white;
+    font-size: 20px;
+    margin-top: 20px;
+    cursor: pointer;
+}
+section#chat #messages li span.username {
+    display: inline-block;
+    padding: 6px 10px;
+    margin-right: 5px;
+    color: white;
+    background: #e67e22;
+    border-radius: 5px;
+}
+section#chat #messages li.logout {
+    background: #E5A6A6;
+}
+section#chat #messages li.login {
+    background: #A8E5A6;
+}
+section#chat #messages li span.info {
+    display: inline-block;
+    padding: 3px 10px;
+    margin-right: 5px;
+    color: white;
+    background: #e67e22;
+    border-radius: 5px;
+}
+section#chat #messages {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    padding-bottom: 50px;
+    display: inline-block;
+    width: calc(100% - 250px);
+}
+html, body, head {
+    height: 100%;
+}
+section#chat {
+    height: 100%;
+}
+section#chat #users {
+    display: inline-block;
+    position: fixed;
+    vertical-align: top;
+    overflow: auto;
+    width: 250px;
+    list-style-type: none;
+    height: 100%;
+    padding-bottom: 50px;
+    border-left: 3px solid #eee;
+}
+section#chat #users li.new {
+    background: #e67e22;
+    color: white;
+}
+section#chat #users li {
+    padding: 6px 10px;
+    margin: 10px 10px;
+    border-radius: 5px;
+    border: 1px solid #e67e22;
+    color: black;
+    transition: all 0.5s;
+}
+section#chat #users li span.typing {
+    float: right;
+    font-style: italic;
+    color: #eee;
+    display: none;
+}
