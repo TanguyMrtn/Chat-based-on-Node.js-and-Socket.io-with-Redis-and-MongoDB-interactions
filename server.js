@@ -16,7 +16,7 @@ db.once('open',function(){
 })
 var MessageSchema = mongoose.Schema({
   username: String,
-  message: String,
+  text: String,
   roomId: String
 });
 
@@ -36,27 +36,30 @@ http.listen(3000, function(){
   console.log('Server is listening on *:3000');
 });
 
-var users;
-var messages;
+var users=[];
 var typingUsers = [];
 
-client.lrange("users",0,-1, function(err,reply) {
+client.del("users"); // On supprime la clé users de redis pour pas poser de problèmes lorsqu'on développe (fermeture barbare des fenêtres reload des pages etc)
+
+/*client.lrange("users",0,-1, function(err,reply) {
 		users=reply;
-});
+}); */
+
+function getMessages(id) {
+  		return new Promise((resolve,reject)=> {
+  			MessageModel.find({roomId:id}).sort().exec(function(err,res) {
+  				if (err) throw err;
+  				resolve(res);
+  			});
+  		})
+  	}
 
 io.on('connection', function(socket){
 
 	console.log('A new user connected');
 	var loggedUser;
 	var loggedUserAsString; // Version stringifiée du json user, pour pas causer de bug lors de l'insertion dans redis
-
-	for (i = 0; i < messages.length; i++) {
-		if (messages[i].username !== undefined) {
-	    	socket.emit('chat-message', messages[i]);
-		} else {
-	    	socket.emit('service-message', messages[i]);
-		}
-	}
+	var oldMessages;
 
 	for (i = 0; i < users.length; i++) {
 	    socket.emit('user-login', JSON.parse(users[i])); // User est une liste de string (json stringifié), on les parses pour réobtenir le bon format
@@ -66,7 +69,7 @@ io.on('connection', function(socket){
   	socket.on('chat-message', function (message) {
 	    message.username = loggedUser.username; // On ajoute l'user au message pour savoir qui l'a envoyé
 
-    	var newMessage = MessageModel({username:message.username,message:message.text,roomId:loggedUser.roomId})
+    	var newMessage = MessageModel({username:message.username,text:message.text,roomId:loggedUser.roomId})
     	newMessage.save();
 
 	    io.to(loggedUser.roomId).emit('chat-message', message); // On émet le message à tout les sockets du chanel, incluant celui envoyant le msg
@@ -82,8 +85,6 @@ io.on('connection', function(socket){
 	        type: 'logout'
 	      };
 	      socket.broadcast.in(loggedUser.roomId).emit('service-message', serviceMessage);
-
-	      messages.push(serviceMessage);
 
 	      client.lrem(['users',0, loggedUserAsString], function(err, reply) { //REDIS - On enlève l'user de la db, on utilise la version stringifiée du json
 	      	if (err) throw err;
@@ -141,7 +142,6 @@ io.on('connection', function(socket){
 	      	socket.join(loggedUser.roomId); // Le socket rejoint le chanel "Lobby"
 	      	socket.emit('service-message', userServiceMessage); // On émet un service-message au socket
 	      	socket.broadcast.in(loggedUser.roomId).emit('service-message', broadcastedServiceMessage); // On broadcast un service-message aux sockets du même chanel
-	      	messages.push(broadcastedServiceMessage);
 
 	      	// Emission de 'user-login' et appel du callback pour ajouter le nouvel user aux user connectés
 	      	io.emit('user-login', loggedUser);
@@ -157,7 +157,7 @@ io.on('connection', function(socket){
 
   		// Message informant que l'user a quitté la room
 	  	var serviceMessage = {
-	        text: 'User "' + loggedUser.username + '" left room',
+	        text: 'User "' + loggedUser.username + ' left the room',
 	        type: 'logout'
 	   	};
 	    socket.broadcast.in(loggedUser.roomId).emit('service-message', serviceMessage); // On broadcast un service-message aux sockets du même channel 
@@ -172,12 +172,18 @@ io.on('connection', function(socket){
 	      type: 'login'
 	    };
 	    var broadcastedServiceMessage = {
-	      text: 'User "' + loggedUser.username + '" joined room '+roomId+'"',
+	      text: 'User "' + loggedUser.username + ' joined room '+roomId,
 	      type: 'login'
 	    };
 	    socket.emit('service-message', userServiceMessage); // On émet un service-message au socket
 	    socket.broadcast.in(roomId).emit('service-message', broadcastedServiceMessage); // On broadcast un service-message aux sockets du même channel pour 
 	    																				// informer de l'arrivé d'un nouvel utilisateur dans la room
+	  	getMessages(loggedUser.roomId).then(res => {
+			oldMessages=res;
+			for (i = 0; i < oldMessages.length; i++) {
+	    		socket.emit('chat-message', oldMessages[i]);
+			}
+		})
 	});
 
 
