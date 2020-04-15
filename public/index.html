@@ -7,6 +7,16 @@
     </style>
   </head>
   <body id="logged-out">
+    <section id="roomChoice">
+      Room Choice
+      <form name="choice">
+        <select name="selected" onchange="roomChanged()" id="selectRoom">
+          <option> Lobby </option>
+          <option> 1 </option>
+          <option> 2 </option>
+        </select>
+      </form>
+    </section>
     <section id="chat">
       <ul id="messages">
       </ul><ul id="users">

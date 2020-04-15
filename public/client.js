@@ -1,5 +1,19 @@
 var socket = io();
 
+
+function roomChanged() {
+  var e = document.getElementById("selectRoom");
+  var roomId = e.options[e.selectedIndex].text;
+  socket.emit('room-changed',roomId);
+  $('#messages').empty();
+}
+
+function getSelectedRoom() {
+  var e = document.getElementById("selectRoom");
+  var roomId = e.options[e.selectedIndex].text;
+  return roomId;
+}
+
 function scrollToBottom() {
   if ($(window).scrollTop() + $(window).height() + 2 * $('#messages li').last().outerHeight() >= $(document).height()) {
     $("html, body").animate({ scrollTop: $(document).height() }, 0);
@@ -20,18 +34,25 @@ $('#login form').submit(function (e) {
 });
 
 
-$('form').submit(function(e) {
+$('#chat form').submit(function(e) {
 	e.preventDefault(); // On évite le recharchement de la page lors de la validation du formulaire
     // On crée notre objet JSON correspondant à notre message
-	var message = {
-		text : $('#m').val()
-	}
-	//socket.emit('chat-message', message); 
+  if (getSelectedRoom() === "Lobby") {
+    $('#m').val('');
+    $('#messages').append($('<li>').html('<span class="username">Système</span> Vous ne pouvez pas écrire dans le lobby !'));
+  }
+  else {
+    var message = {
+    text : $('#m').val()
+  }
+  //socket.emit('chat-message', message); 
     $('#m').val(''); // On vide le champ texte
     if (message.text.trim().length !== 0) { // Gestion message vide
       socket.emit('chat-message', message); // On émet l'événement avec le message associé
     }
     $('#chat input').focus(); // Focus sur le champ du message
+  } 
+
 });
 
 socket.on('chat-message', function (message) {
