@@ -8,6 +8,22 @@ var io = require('socket.io')(http);
 const redis = require("redis");
 const client = redis.createClient();
 
+var mongoose = require('mongoose')
+mongoose.connect('mongodb://localhost:27017/Chat')
+var db = mongoose.connection
+db.once('open',function(){
+  console.log('Connecté à la db mongo')
+})
+var MessageSchema = mongoose.Schema({
+  username: String,
+  message: String,
+  roomId: String
+});
+
+var MessageModel = mongoose.model('Message',MessageSchema)
+
+
+
 client.on("error", function(error) {
   console.error(error);
 });
@@ -20,9 +36,8 @@ http.listen(3000, function(){
   console.log('Server is listening on *:3000');
 });
 
-
 var users;
-var messages = [];
+var messages;
 var typingUsers = [];
 
 client.lrange("users",0,-1, function(err,reply) {
@@ -51,12 +66,11 @@ io.on('connection', function(socket){
   	socket.on('chat-message', function (message) {
 	    message.username = loggedUser.username; // On ajoute l'user au message pour savoir qui l'a envoyé
 
+    	var newMessage = MessageModel({username:message.username,message:message.text,roomId:loggedUser.roomId})
+    	newMessage.save();
+
 	    io.to(loggedUser.roomId).emit('chat-message', message); // On émet le message à tout les sockets du chanel, incluant celui envoyant le msg
 
-	    messages.push(message);
-	    if (messages.length > 150) {
-	      messages.splice(0, 1);
-	    }
   	});
 
 
