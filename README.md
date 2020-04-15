@@ -30,4 +30,6 @@ Room system added : one lobby, where people can't write, and 2 chat rooms. Peopl
 
 Messages saved in a mongo database. 
 
+When a user connects to a room, he can see all the older messages.
+
 Feel free to contact us for further information
