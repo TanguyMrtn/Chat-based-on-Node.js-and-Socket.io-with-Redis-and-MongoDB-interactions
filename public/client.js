@@ -1,6 +1,5 @@
 var socket = io();
 
-
 function roomChanged() {
   var e = document.getElementById("selectRoom");
   var roomId = e.options[e.selectedIndex].text;

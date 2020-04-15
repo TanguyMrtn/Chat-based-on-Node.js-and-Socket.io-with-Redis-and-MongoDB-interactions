@@ -95,62 +95,64 @@ io.on('connection', function(socket){
 	    // Vérification que l'utilisateur n'existe pas
 	    var userIndex = -1;
 	    for (i = 0; i < users.length; i++) {
-	      if (JSON.parse(users[i]).username === user.username) {
-	        userIndex = i;
-	      }
+	      	if (JSON.parse(users[i]).username === user.username) {
+	        	userIndex = i;
+	      	}
 	    }
 	    if (user !== undefined && userIndex === -1) { // S'il est bien nouveau
-	      // Sauvegarde de l'utilisateur et ajout à la liste des connectés
-	      loggedUser = user;
-	      loggedUser.roomId="Lobby"; // De base, un nouvel utilisateur se connecte à la room lobby
-	      loggedUserAsString = JSON.stringify(loggedUser); // Stringificaiton du document pour ajouter dans redis
+	      	// Sauvegarde de l'utilisateur et ajout à la liste des connectés
+	      	loggedUser = user;
+	      	loggedUser.roomId="Lobby"; // De base, un nouvel utilisateur se connecte à la room lobby
+	      	loggedUserAsString = JSON.stringify(loggedUser); // Stringificaiton du document pour ajouter dans redis
 
-	      client.rpush(['users', loggedUserAsString], function(err, reply) {   // REDIS - Ajout de l'user à la db, on utilise la version stringifiée du document
-	      	if (err) throw err;
-	    	console.log(reply); // On s'assure que l'ajout s'est bien fait
-		  });
-		  client.lrange("users",0,-1, function(err,reply) { // on remet à jour la variable users
-		  	if (err) throw err;
-			users=reply;
-		  });
+	      	client.rpush(['users', loggedUserAsString], function(err, reply) {   // REDIS - Ajout de l'user à la db, on utilise la version stringifiée du document
+	      		if (err) throw err;
+	    		console.log(reply); // On s'assure que l'ajout s'est bien fait
+		  	});
+		  	client.lrange("users",0,-1, function(err,reply) { // on remet à jour la variable users
+		  		if (err) throw err;
+				users=reply;
+		  	});
 
-	      // Envoi des messages de service
-	      var userServiceMessage = {
-	        text: 'You logged in as "' + loggedUser.username + '", please choose a room to start texting !',
-	        type: 'login'
-	      };
-	      var broadcastedServiceMessage = {
-	        text: 'User "' + loggedUser.username + '" logged in',
-	        type: 'login'
-	      };
+	      	// Envoi des messages de service
+	      	var userServiceMessage = {
+	        	text: 'You logged in as "' + loggedUser.username + '", please choose a room to start texting !',
+	        	type: 'login'
+	      	};
+	      	var broadcastedServiceMessage = {
+	        	text: 'User "' + loggedUser.username + '" logged in',
+	        	type: 'login'
+	      	};
 
-	      socket.join(loggedUser.roomId); // Le socket rejoint le chanel "Lobby"
-	      socket.emit('service-message', userServiceMessage); // On émet un service-message au socket
-	      socket.broadcast.in(loggedUser.roomId).emit('service-message', broadcastedServiceMessage); // On broadcast un service-message aux sockets du même chanel
-	      messages.push(broadcastedServiceMessage);
+	      	socket.join(loggedUser.roomId); // Le socket rejoint le chanel "Lobby"
+	      	socket.emit('service-message', userServiceMessage); // On émet un service-message au socket
+	      	socket.broadcast.in(loggedUser.roomId).emit('service-message', broadcastedServiceMessage); // On broadcast un service-message aux sockets du même chanel
+	      	messages.push(broadcastedServiceMessage);
 
-	      // Emission de 'user-login' et appel du callback pour ajouter le nouvel user aux user connectés
-	      io.emit('user-login', loggedUser);
-	      callback(true); }
-	    
+	      	// Emission de 'user-login' et appel du callback pour ajouter le nouvel user aux user connectés
+	      	io.emit('user-login', loggedUser);
+	      	callback(true); 
+	    }   
 	    else {
-	      callback(false);
+	      	callback(false);
 	    }
   	});
 
 
   	socket.on('room-changed',function(roomId) {
 
+  		// Message informant que l'user a quitté la room
 	  	var serviceMessage = {
 	        text: 'User "' + loggedUser.username + '" left room',
 	        type: 'logout'
-	      	};
-	    socket.broadcast.in(loggedUser.roomId).emit('service-message', serviceMessage);
-	    socket.leave(loggedUser.roomId);
+	   	};
+	    socket.broadcast.in(loggedUser.roomId).emit('service-message', serviceMessage); // On broadcast un service-message aux sockets du même channel 
+	    																				// pour informer qu'un utilisateur a quitté la room
+	    socket.leave(loggedUser.roomId); // Le socket quitte son ancien chanel
 
-	  	loggedUser.roomId = roomId;
-	  	socket.join(roomId);
-	    // Envoi des messages de service
+	  	loggedUser.roomId = roomId; // Nouvel roomId
+	  	socket.join(loggedUser.roomId); // Le socket rejoit le nouveau chanel
+	    // Envoi des messages de service pour informer du changement
 	    var userServiceMessage = {
 	      text: 'You joined room "'+roomId ,
 	      type: 'login'
@@ -159,8 +161,9 @@ io.on('connection', function(socket){
 	      text: 'User "' + loggedUser.username + '" joined room '+roomId+'"',
 	      type: 'login'
 	    };
-	    socket.emit('service-message', userServiceMessage);
-	    socket.broadcast.in(roomId).emit('service-message', broadcastedServiceMessage);
+	    socket.emit('service-message', userServiceMessage); // On émet un service-message au socket
+	    socket.broadcast.in(roomId).emit('service-message', broadcastedServiceMessage); // On broadcast un service-message aux sockets du même channel pour 
+	    																				// informer de l'arrivé d'un nouvel utilisateur dans la room
 	});
 
 
@@ -173,6 +176,7 @@ io.on('connection', function(socket){
   	});
 
   	socket.on('stop-typing', function () {
+  	// On retire l'user de la liste des utilisateurs en cours de saisie
     	var typingUserIndex = typingUsers.indexOf(loggedUser);
     	if (typingUserIndex !== -1) {
       		typingUsers.splice(typingUserIndex, 1);
