@@ -18,6 +18,8 @@ Same if you don't want to use replicaset (check mongoose adress).
 
 Browse to localhost:3000
 
+If you want to build an Admin panel, you can find some endpoint functions at the end of "server.js".
+
 # Features 
 
 Know which users are logged in and display them (using Redis) :white_check_mark:
@@ -54,8 +56,9 @@ Replicaset tutoriel added
 
 Examples of Mongo requests (basics ones and some with aggregations)
 
-Code ended
+Endpoint API added (at the end of server.js)
 
-Feel free to contact us for further information
+
+# Feel free to contact us for further information
 
 

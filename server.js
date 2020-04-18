@@ -14,10 +14,10 @@ const client = redis.createClient();
 var mongoose = require('mongoose')
 
 // adresse pour le développement, db Chat
-//let replicaSet='mongodb://localhost:27017/Chat'
+let replicaSet='mongodb://localhost:27017/Chat'
 
 // adresse replicaSet ports : 27018-19-20, nom replica rs0, db Chat
-let replicaSet = 'mongodb://localhost:27018,localhost:27019,localhost:27020/Chat?replicaSet=rs0'
+//let replicaSet = 'mongodb://localhost:27018,localhost:27019,localhost:27020/Chat?replicaSet=rs0'
 
 // Connexion
 mongoose.connect(replicaSet)
@@ -222,3 +222,111 @@ io.on('connection', function(socket){
   	});
 });
 
+
+//////// ENDPOINT API /////////
+
+function getAllMessages() {
+	// Pour avoir tout les messages
+	MessageModel.find({}).exec(function(err,res) {
+		console.log(res);
+	})
+}
+//getAllMessages();
+
+function getNumberOfMessages() {
+	// Pour avoir le nombre de messages
+	MessageModel.find({}).count().exec(function(err,res) {
+		console.log(res);
+	})
+}
+//getNumberOfMessages();
+
+function getAllUserMessage(username) {
+	// Pour avoir tout les messages d'un utilisateur
+	MessageModel.find({username:username}).exec(function(err,res) {
+		console.log(res);
+	})
+}
+//getAllUserMessage("Tanguy");
+
+function getAllUserMessageNumber(username) {
+	// Pour avoir le nombre de message total (toutes rooms confondues) d'un utilisateur
+	MessageModel.find({username:username}).count().exec(function(err,res) {
+		console.log(res);
+	})
+}
+//getAllUserMessageNumber("Tanguy");
+
+function getAllUserMessageInRoom(username,roomId) {
+	// Pour avoir tout les messages d'un utilisateur dans une room
+	MessageModel.find({username:username,roomId:roomId}).exec(function(err,res) {
+		console.log(res);
+	})
+}
+//getAllUserMessageInRoom("Tanguy","1");
+
+function getAllUserMessageNumberInRoom(username,roomId) {
+	// Pour avoir le nombre de message d'un utilisateur dans une room
+	MessageModel.find({username:username,roomId:roomId}).count().exec(function(err,res) {
+		console.log(res);
+	})
+}
+//getAllUserMessageNumberInRoom("Tanguy","1");
+
+function getRoomMessage(roomId) {
+	// Pour avoir tout les messages d'une room
+	MessageModel.find({roomId:roomId}).exec(function(err,res) {
+		console.log(res);
+	})
+}
+//getRoomMessage("1");
+
+function getRoomMessageNumber(roomId) {
+	// Pour avoir le nombre de message d'une room
+	MessageModel.find({roomId:roomId}).count().exec(function(err,res) {
+		console.log(res);
+	})
+}
+//getRoomMessageNumber("1");
+
+// REQUEST WITH AGGREGATIONS
+
+function getUsersGlobalActivity() {
+	// Pour avoir l'activité globale des utilisateurs
+	MessageModel.aggregate([{$group:{_id:"$username",nbMessage:{$sum:1}}},{$sort:{nbMessage:-1}}]).exec(function(err,res) {
+	console.log(res);
+	})
+}
+// getUsersGlobalActivity();
+
+function getUsersActivityPerRoom() {
+	// Pour avoir l'activité des utilisateurs par room
+	MessageModel.aggregate([{$group:{_id:{username:"$username",roomId:"$roomId"},"nbOfMessageInRoom":{$sum:1}}}]).exec(function(err,res) {
+	console.log(res);
+	})
+}
+//getUsersActivityPerRoom();
+
+function getRoomSolicitation() {
+	// Pour avoir la solicitation des rooms (nombre de message dedans)
+	MessageModel.aggregate([{$group:{_id:"$roomId",nbMessageInRoom:{$sum:1}}},{$sort:{nbMessageInRoom:-1}}]).exec(function(err,res) {
+	console.log(res);
+	})
+}
+//getRoomSolicitation();
+
+function getUsersPerRoom() {
+	// Pour avoir les utilisateurs qui ont participé aux rooms
+	MessageModel.aggregate([{$group:{_id:{roomId:"$roomId",username:"$username"}}}]).exec(function(err,res) {
+	console.log(res);
+	})
+}
+//getUsersPerRoom();
+
+function getDistinctUsersPerRoom() {
+	// Pour avoir le nombre d'utilisateur différent ayant participé au chat d'une room (trié)
+	MessageModel.aggregate([{$group:{_id:{roomId:"$roomId",username:"$username"}}},{$group:{_id:"$_id.roomId",nbDistinctUser:{$sum:1}}},{$sort:{nbDistinctUser:-1}}]).exec(function(err,res) {
+	console.log(res);
+	})
+}
+//getDistinctUsersPerRoom();
