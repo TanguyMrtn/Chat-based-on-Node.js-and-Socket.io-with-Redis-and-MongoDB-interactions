@@ -20,6 +20,8 @@ Browse to localhost:3000
 
 If you want to build an Admin panel, you can find some endpoint functions at the end of "server.js".
 
+:warning: If you want to change room, on the web page, it's at the top left corner so please scroll up ! :warning:
+
 # Features 
 
 Know which users are logged in and display them (using Redis) :white_check_mark:
