@@ -1,0 +1,32 @@
+Tuto replicaset :
+
+On lance un premier serveur mongod, appartenant au replicaset rs0, lancé sur le port 27018 et dont la dbpath est "D:\Cours\Semestre 8\INFO834\TP Final\myproject\data\R0S1" :
+
+mongod --replSet rs0 --port 27018 --dbpath "D:\Cours\Semestre 8\INFO834\TP Final\myproject\data\R0S1"
+
+En mode console, sur ce serveur (port 27018 --> mongo --port 27018), on initialise le replicaset : rs.initiate()
+
+Ce serveur, seul membre du replicaset actuellement, est désigné "PRIMARY".
+
+Ensuite, on lance deux autres serveurs, appartenant également au replicaset rs0, lancés sur les ports 27019 et 27020 et dont la dbpath est .\R0S2 et .\R0S3 :
+
+mongod --replSet rs0 --port 27019 --dbpath "D:\Cours\Semestre 8\INFO834\TP Final\myproject\data\R0S2"
+
+mongod --replSet rs0 --port 27020 --dbpath "D:\Cours\Semestre 8\INFO834\TP Final\myproject\data\R0S3"
+
+Sur la console du premier serveur (port 27018), on ajoute au replicaset ces deux nouveaux servers : rs.add("localhost:27019") et rs.add("localhost:27020")
+
+On vérifit que tout s'est bien passé avec rs.status().
+
+Ensuite on lance un serveur qui servira d'arbitre pour désigner le serveur primary, appartenant à rs0, lancé sur le port 30000 et dont la dbpath est .\arb :
+
+mongod --replSet rs0 --port 30000 --dbpath "D:\Cours\Semestre 8\INFO834\TP Final\myproject\data\arb"
+
+Sur la console du premier serveur (port 27018), on ajoute l'arbitre : rs.addArb("localhost:30000")
+
+On vérifit que tout s'est bien passé avec rs.status().
+
+Le replicaset est établi. On a 3 serveurs de replication (1 PRIMARY et 2 SECONDARY) et 1 arbitre.
+
+
+

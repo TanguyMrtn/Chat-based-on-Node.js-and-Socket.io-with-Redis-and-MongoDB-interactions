@@ -1,5 +1,6 @@
 var socket = io();
 
+// Lorsqu'on change de room on émet un msg room-changed et on vide les messages
 function roomChanged() {
   var e = document.getElementById("selectRoom");
   var roomId = e.options[e.selectedIndex].text;
@@ -7,18 +8,21 @@ function roomChanged() {
   $('#messages').empty();
 }
 
+// Pour récupérer la room actuelle
 function getSelectedRoom() {
   var e = document.getElementById("selectRoom");
   var roomId = e.options[e.selectedIndex].text;
   return roomId;
 }
 
+// Faire défiler le tchat si on est pas entrain de scroll pour remonter
 function scrollToBottom() {
   if ($(window).scrollTop() + $(window).height() + 2 * $('#messages li').last().outerHeight() >= $(document).height()) {
     $("html, body").animate({ scrollTop: $(document).height() }, 0);
   }
 }
 
+// Envoie d'un msg user-login lorsqu'on se login
 $('#login form').submit(function (e) {
   e.preventDefault();
   var user = {username : $('#login input').val().trim()};
@@ -32,7 +36,7 @@ $('#login form').submit(function (e) {
   }
 });
 
-
+// Envoie d'un msg chat-message lorsqu'on a écrit un message. Si dans room lobby --> bloquage
 $('#chat form').submit(function(e) {
 	e.preventDefault(); // On évite le recharchement de la page lors de la validation du formulaire
     // On crée notre objet JSON correspondant à notre message
@@ -54,16 +58,19 @@ $('#chat form').submit(function(e) {
 
 });
 
+// Lors d'un event chat-message on affiche le message
 socket.on('chat-message', function (message) {
   $('#messages').append($('<li>').html('<span class="username">' + message.username + '</span> ' + message.text));
   scrollToBottom();
 });
 
+// Lors d'un event service-message on affiche le message
 socket.on('service-message', function (message) {
   $('#messages').append($('<li class="' + message.type + '">').html('<span class="info">information</span> ' + message.text));
   scrollToBottom();
 });
 
+// Lors d'un event user-login on ajoute l'user aux users connectés
 socket.on('user-login', function (user) {
   $('#users').append($('<li class="' + user.username + ' new">').html(user.username + '<span class="typing">typing</span>'));
   setTimeout(function () {
@@ -71,6 +78,7 @@ socket.on('user-login', function (user) {
   }, 1000);
 });
 
+// Lors d'un event user-logout on remove l'user des users connectés
 socket.on('user-logout', function (user) {
   var selector = '#users li.' + user.username;
   $(selector).remove();
@@ -79,6 +87,7 @@ socket.on('user-logout', function (user) {
 var typingTimer;
 var isTyping = false;
 
+// lorsqu'on écrit on envoit un msg start-typing
 $('#m').keypress(function () {
   clearTimeout(typingTimer);
   if (!isTyping) {
@@ -87,6 +96,7 @@ $('#m').keypress(function () {
   }
 });
 
+// lorsqu'on écrit plus on envoit un msg stop-typing (avec un timer pour pas spam d'event start et stop typing)
 $('#m').keyup(function () {
   clearTimeout(typingTimer);
   typingTimer = setTimeout(function () {
@@ -97,6 +107,7 @@ $('#m').keyup(function () {
   }, 500);
 });
 
+// Lors d'un event update-typing on ajoute l'animation à l'user concerné
 socket.on('update-typing', function (typingUsers) {
   $('#users li span.typing').hide();
   for (i = 0; i < typingUsers.length; i++) {

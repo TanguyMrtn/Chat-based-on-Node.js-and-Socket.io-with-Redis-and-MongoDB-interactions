@@ -1,0 +1,55 @@
+Commandes mongo :
+
+########## COMMANDES BASIQUES ##########
+
+--- Pour avoir tout les messages :
+
+db.messages.find().pretty()
+
+--- Pour avoir tout les messages d'un utilisateur :
+
+db.messages.find({username:"Tanguy"}).pretty()
+
+--- Pour avoir le nombre de message total (toutes rooms confondues) d'un utilisateur :
+
+db.messages.find({username:"Tanguy"}).count()
+
+--- Pour avoir tout les messages d'un utilisateur dans une room :
+
+db.messages.find({username:"Tanguy",roomId:"1"}).pretty()
+
+--- Pour avoir le nombre de message d'un utilisateur dans une room : 
+
+db.messages.find({username:"Tanguy",roomId:"1"}).count()
+
+--- Pour avoir tout les messages d'une room : 
+
+db.messages.find({roomId:"1"}).pretty()   (remplacer .pretty() par .count() pour avoir le nb)
+
+
+########## COMMANDES AVEC AGGREGATION ##########
+
+--- Pour avoir l'activité globale des utilisateurs :
+
+db.messages.aggregate({$group:{_id:"$username",nbMessage:{$sum:1}}},{$sort:{nbMessage:-1}})
+
+--- Pour avoir l'activité des utilisateurs par room :
+
+db.messages.aggregate({$group:{_id:{username:"$username",roomId:"$roomId"},"nbOfMessageInRoom":{$sum:1}}})
+
+
+--- Pour avoir la solicitation des rooms (nombre de message dedans) :
+
+db.messages.aggregate({$group:{_id:"$roomId",nbMessageInRoom:{$sum:1}}},{$sort:{nbMessageInRoom:-1}})
+
+
+--- Pour avoir les utilisateurs qui ont participé aux rooms :
+
+db.messages.aggregate({$group:{_id:{roomId:"$roomId",username:"$username"}}})
+
+
+--- Pour avoir le nombre d'utilisateur différent ayant participé au chat d'une room (trié) : 
+
+db.messages.aggregate({$group:{_id:{roomId:"$roomId",username:"$username"}}},{$group:{_id:"$_id.roomId",nbDistinctUser:{$sum:1}}},{$sort:{nbDistinctUser:-1}})
+
+

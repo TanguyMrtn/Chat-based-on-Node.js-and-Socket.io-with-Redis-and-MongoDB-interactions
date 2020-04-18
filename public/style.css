@@ -53,6 +53,11 @@ body#logged-out section#chat {
     filter: blur(5px);
     -webkit-filter: blur(5px);
 }
+body#logged-out section#roomChoice {
+    filter: blur(5px);
+    -webkit-filter: blur(5px);
+}
+
 body#logged-out section#login {
     opacity: 1;
 }
