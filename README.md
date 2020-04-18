@@ -21,9 +21,13 @@ Browse to localhost:3000
 # Features 
 
 Know which users are logged in and display them (using Redis) :white_check_mark:
+
 Store all messages in MongoDB :white_check_mark:
+
 Use the ReplicaSet to enable better fault tolerance :white_check_mark:
+
 Be able to display a previous conversation between two users :white_check_mark: 
+
 Output relevant queries: most requested user, the one who communicates the most, etc. :white_check_mark:
 
 # Project progress
