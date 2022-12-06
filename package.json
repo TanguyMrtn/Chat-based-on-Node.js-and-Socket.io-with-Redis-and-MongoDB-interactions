@@ -3,7 +3,7 @@
    "version": "0.0.1",
    "description": "my first socket.io app",
    "dependencies": {
-      "express": "^4.10.2",
+      "express": "^4.17.3",
       "mongoose": "^5.9.9",
       "redis": "^3.0.2",
       "socket.io": "^2.3.0"
